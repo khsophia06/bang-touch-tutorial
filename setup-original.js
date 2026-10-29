@@ -11,7 +11,7 @@ function renderSetupFilm(){
  const host=document.getElementById('setup-film-seats');if(!host)return;host.replaceChildren();
  const characters=['bart-cassidy','black-jack','calamity-janet','jesse-jones','kit-carlson','lucky-duke','rose-doolan'];
  for(let i=0;i<count;i++){
-  const seat=document.createElement('div');seat.className='setup-film-seat';seat.style.setProperty('--seat-index',i);const angle=(i/count)*Math.PI*2-Math.PI/2;seat.style.left=(50+Math.cos(angle)*38)+'%';seat.style.top=(50+Math.sin(angle)*28)+'%';seat.style.setProperty('--seat-top',(50+Math.sin(angle)*28)+'%');
+  const seat=document.createElement('div');seat.className='setup-film-seat';seat.style.setProperty('--seat-index',i);seat.style.setProperty('--seat-rotation',(i*360/count-180)+'deg');const angle=(i/count)*Math.PI*2-Math.PI/2;seat.style.left=(50+Math.cos(angle)*38)+'%';seat.style.top=(50+Math.sin(angle)*28)+'%';seat.style.setProperty('--seat-top',(50+Math.sin(angle)*28)+'%');
   const label=document.createElement('b');label.className='setup-seat-label';label.textContent=i===0?'보안관':'자리 '+(i+1);
   const mat=document.createElement('div');mat.className='setup-real-mat';const pic=document.createElement('img');pic.src='assets/player-mat-clean.webp';pic.alt='개인 판';pic.width=1479;pic.height=1064;mat.append(pic);
   const role=document.createElement('span');role.className='setup-dealt-role';
@@ -71,6 +71,13 @@ async function animateSetupDeal(step){
    const bullets=[...life.querySelectorAll('img')];
    for(const bullet of bullets)bullet.style.opacity='0';
    for(const bullet of bullets){await animation(bullet,[{opacity:0,transform:'translateY(-45px) scale(1.5)'},{opacity:1,transform:'none'}],230);bullet.style.opacity='';}
+   await animation(life,[{opacity:1},{opacity:1}],600,false);
+   const prompt=document.createElement('div');prompt.className='sheriff-life-prompt';prompt.setAttribute('role','status');prompt.textContent='내가 보안관이라면? 총알을 한 개 더 받아요!';board.append(prompt);actors.push(prompt);
+   const extra=document.createElement('img');extra.src='assets/life-bullet.webp';extra.alt='보안관 추가 생명 1';extra.className='sheriff-extra-bullet';life.append(extra);
+   await animation(extra,[{opacity:0,transform:'translateY(-60px) scale(1.5)'},{opacity:1,transform:'none'}],600);
+   const roleTarget=seat.querySelector('.setup-dealt-role');roleTarget.replaceChildren(image(cards.find(c=>c.key==='sheriff')));
+   await animation(prompt,[{opacity:1},{opacity:1}],1600,false);prompt.remove();
+
   }
  };
  const distribute=async(kind)=>{
