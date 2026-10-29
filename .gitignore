@@ -1,0 +1,7 @@
+*-preview.png
+preview.png
+.DS_Store
+Thumbs.db
+node_modules/
+.env
+.env.*
