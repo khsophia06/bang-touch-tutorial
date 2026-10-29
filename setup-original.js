@@ -28,7 +28,7 @@ function renderSetupFilm(){
 }
 function showSetupStep(step){
  setupDealController?.abort();setupDealController=null;
- setupFilmStep=step;const board=document.getElementById('setup-film-board');if(!board)return;
+ document.getElementById('setup-motion-status').hidden=step!==2&&step!==4;setupFilmStep=step;const board=document.getElementById('setup-film-board');if(!board)return;
  const content=[['01 / 각자의 자리','개인 판을 하나씩 나눠 가지세요.','각자의 앞에 개인 판을 놓고, 가운데는 비워 두세요. 콜트 45는 판에 표시된 기본 무기이며 따로 나눠 주는 카드가 아니에요.'],['02 / 역할 나누기','역할 카드를 한 장씩 받아요.','보안관만 역할을 공개하고 나머지는 자신만 역할을 확인한 후 개인 판에 올려놓아요.'],['03 / 인물과 생명','인물을 공개하고 생명을 놓아요.','인물 카드에 그려진 총알 수가 자신의 생명 수입니다. 보안관은 그려진 총알 수보다 1개를 더 받아요!!'],['04 / 시작 손패','시작 생명 수만큼 카드를 받아요.','플레이 카드 더미에서 내 시작 생명 수만큼 카드를 받아 손패로 들어요.'],['05 / 중앙 카드 더미','가운데에 더미를 놓으면 준비 끝!','남은 플레이 카드는 뒷면이 위로 향하게 쌓아요. 옆에는 버린 더미 자리를 비워 두세요. 보안관부터 시계 방향으로 시작해요.'],['06 / 참조표 카드','참조표를 옆에 놓고 확인하세요.','']][step];
  board.classList.remove('hand-received','setup-turn-ready');board.querySelectorAll('.setup-turn-highlight').forEach(n=>n.classList.remove('setup-turn-highlight'));board.querySelector('.setup-turn-cue')?.remove();board.dataset.stage=step;board.setAttribute('aria-label',(step===0||step===4)?count+'인 전체 테이블 배치':'내 자리에서 바라본 개인 판. 왼쪽은 역할, 가운데는 인물, 오른쪽은 기본 무기 자리이며 아래쪽은 손패예요.');board.classList.remove('is-dealing');void board.offsetWidth;board.classList.add('is-dealing');
  document.getElementById('setup-film-progress').textContent=(step+1)+' / 6';document.getElementById('setup-film-step-label').textContent=content[0];document.getElementById('setup-film-title').textContent=content[1];document.getElementById('setup-film-description').textContent=content[2];document.getElementById('setup-film-description').hidden=step===5;
@@ -51,7 +51,7 @@ async function animateSetupDeal(step){
   const source=key?cards.find(c=>c.key===key):null;
   if(source){actor.append(image(source));if(key==='black-jack'){const ring=document.createElement('span');ring.className='setup-life-ring';ring.setAttribute('aria-hidden','true');ring.style.opacity='0';const label=document.createElement('span');label.className='setup-life-callout';label.style.opacity='0';label.textContent='총알 4개 = 시작 생명 4';actor.append(ring,label);}}else{const reverse=document.createElement('span');reverse.className='setup-card-reverse';reverse.textContent='BANG!';actor.append(reverse);}
   const bounds=board.getBoundingClientRect(),dest=target.getBoundingClientRect();
-  const width=Math.min(220,bounds.width*.68,innerHeight*.29),height=width*1.5;
+  const width=step===4?Math.min(74,bounds.width*.22):Math.min(190,bounds.width*.6,innerHeight*.24),height=width*1.5;
   const x=bounds.left+(bounds.width-width)/2+order*3,y=Math.max(82,bounds.top+(bounds.height-height)/2);
   Object.assign(actor.style,{left:x+'px',top:y+'px',width:width+'px',height:height+'px'});document.body.append(actor);actors.push(actor);
   await animation(actor,[{opacity:0,transform:'perspective(900px) rotateY(95deg) scale(.9)'},{opacity:1,transform:'perspective(900px) rotateY(0deg) scale(1)'},{opacity:1,transform:'perspective(900px) rotateY(0deg) scale(1)'}],step===3?500:1050);
@@ -72,7 +72,7 @@ async function animateSetupDeal(step){
    for(const bullet of bullets)bullet.style.opacity='0';
    for(const bullet of bullets){await animation(bullet,[{opacity:0,transform:'translateY(-45px) scale(1.5)'},{opacity:1,transform:'none'}],230);bullet.style.opacity='';}
    await animation(life,[{opacity:1},{opacity:1}],600,false);
-   const prompt=document.createElement('div');prompt.className='sheriff-life-prompt';prompt.setAttribute('role','status');prompt.textContent='내가 보안관이라면? 총알을 한 개 더 받아요!';board.append(prompt);actors.push(prompt);
+   const prompt=document.createElement('div');prompt.className='sheriff-life-prompt';prompt.setAttribute('role','status');prompt.textContent='내가 보안관이라면? 총알을 한 개 더 받아요!';document.getElementById('setup-motion-status').append(prompt);actors.push(prompt);
    const extra=document.createElement('img');extra.src='assets/life-bullet.webp';extra.alt='보안관 추가 생명 1';extra.className='sheriff-extra-bullet';life.append(extra);
    await animation(extra,[{opacity:0,transform:'translateY(-60px) scale(1.5)'},{opacity:1,transform:'none'}],600);
    const roleTarget=seat.querySelector('.setup-dealt-role');roleTarget.replaceChildren(image(cards.find(c=>c.key==='sheriff')));
@@ -114,7 +114,7 @@ async function animateSetupDeal(step){
   if(step===4){
    const draw=board.querySelector('.setup-film-draw>.setup-card-reverse');conceal(draw);await fly(draw,null);
    await animation(board,[{opacity:1},{opacity:1}],1000);
-   const cue=document.createElement('div');cue.className='setup-turn-cue';cue.setAttribute('role','status');cue.textContent='보안관부터 시작해요';board.append(cue);
+   const cue=document.createElement('div');cue.className='setup-turn-cue';cue.setAttribute('role','status');cue.textContent='보안관부터 시작해요';document.getElementById('setup-motion-status').append(cue);
    const seats=[...board.querySelectorAll('.setup-film-seat')];
    for(let i=0;i<seats.length;i++){
     seats.forEach(n=>n.classList.remove('setup-turn-highlight'));seats[i].classList.add('setup-turn-highlight');
